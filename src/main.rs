@@ -1,7 +1,22 @@
+use clap::Parser;
 use std::fmt;
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Target number, e.g. 252
+    #[arg(short, long, required = true)]
+    target: i32,
+
+    /// Numbers available to be combined to reach the target, e.g. 3 5 7 13 20 25
+    #[arg(short, long, num_args = 6, required = true)]
+    numbers: Vec<i32>,
+}
+
 fn main() {
-    match dfs(vec![3, 5, 7, 13, 20, 25], 412) {
+    let args = Args::parse();
+
+    match dfs(args.numbers, args.target) {
         Some(hist) => {
             println!("Solution found!");
             for line in hist {
@@ -44,46 +59,6 @@ fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<String>> {
         }
     }
     return None;
-
-    // fn dfs_inner(nums: &[i32], history: Vec<String>) -> Option<Vec<String>> {
-    //     for n1 in nums.iter() {
-    //         for n2 in nums.iter() {
-    //             // TODO: fix so n1 != n2
-    //             for op in all_ops.iter() {
-    //                 if let Some(result) = apply_op(*op, *n1, *n2) {
-    //                     history
-    //                         .clone()
-    //                         .push(format!("{} {} {} = {}", n1, op, n2, result));
-    //                     if result == target {
-    //                         return Some(history);
-    //                     } else {
-    //                         // let mut new_nums = nums.to_vec();
-    //                         // new_nums.remove(n1);
-    //                         // new_nums.remove(n2);
-    //                         // let mut new_hist = history.clone();
-    //                         // new_hist.push(format!("{} {} {} = {}", n1, op, n2, result));
-    //                         // if let Some(hist) = dfs_inner(&new_nums, new_hist) {
-    //                         //     return Some(hist);
-    //                         // }
-    //                     }
-    //                     // if result == target {
-    //                     //     return Some(history);
-    //                     // } else {
-    //                     //     let mut new_nums = nums.to_vec();
-    //                     //     new_nums.remove(n1);
-    //                     //     new_nums.remove(n2);
-    //                     //     let mut new_hist = history.clone();
-    //                     //     new_hist.push(format!("{} {} {} = {}", n1, op, n2, result));
-    //                     //     if let Some(hist) = dfs_inner(&new_nums, new_hist) {
-    //                     //         return Some(hist);
-    //                     //     }
-    //                     // }
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return None;
-    // }
 }
 
 fn apply_op(op: Ops, n1: i32, n2: i32) -> Option<i32> {
@@ -92,7 +67,7 @@ fn apply_op(op: Ops, n1: i32, n2: i32) -> Option<i32> {
         Ops::Minus => Some(n1 - n2),
         Ops::Multiply => Some(n1 * n2),
         Ops::Divide => {
-            if n1 % n2 == 0 {
+            if n2 != 0 && n1 % n2 == 0 {
                 Some(n1 / n2)
             } else {
                 None
