@@ -16,7 +16,6 @@ pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<Expression>> {
                                 return Some(new_history);
                             } else {
                                 let mut new_nums = nums
-                                    .clone()
                                     .iter()
                                     .enumerate()
                                     .filter(|(i, _)| *i != i1 && *i != i2)
@@ -31,7 +30,7 @@ pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<Expression>> {
             }
         }
     }
-    return None;
+    None
 }
 
 fn apply_op(op: Ops, n1: i32, n2: i32) -> Option<i32> {
