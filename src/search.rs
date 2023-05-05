@@ -1,33 +1,6 @@
-use clap::Parser;
 use std::fmt;
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// Target number, e.g. 252
-    #[arg(short, long, required = true)]
-    target: i32,
-
-    /// Numbers available to be combined to reach the target, e.g. 3 5 7 13 20 25
-    #[arg(short, long, num_args = 6, required = true)]
-    numbers: Vec<i32>,
-}
-
-fn main() {
-    let args = Args::parse();
-
-    match dfs(args.numbers, args.target) {
-        Some(hist) => {
-            println!("Solution found!");
-            for line in hist {
-                println!("{}", line);
-            }
-        }
-        None => println!("No solution found"),
-    }
-}
-
-fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<String>> {
+pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<String>> {
     let hist: Vec<String> = vec![];
     let mut search = vec![(numbers, hist)];
 
@@ -79,7 +52,7 @@ fn apply_op(op: Ops, n1: i32, n2: i32) -> Option<i32> {
 const ALL_OPS: [Ops; 4] = [Ops::Plus, Ops::Minus, Ops::Multiply, Ops::Divide];
 
 #[derive(Clone, Copy)]
-enum Ops {
+pub enum Ops {
     Plus,
     Minus,
     Multiply,
@@ -94,5 +67,73 @@ impl fmt::Display for Ops {
             Ops::Multiply => write!(f, "*"),
             Ops::Divide => write!(f, "/"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test] // so that you can run this with `cargo test --release -- my_bench --nocapture`
+    fn bench() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 252013;
+        let num_iters = 10;
+        let t = std::time::Instant::now();
+        for _ in 0..num_iters {
+            // adjust the loop time manually, so that the total time is about 1 second
+            let res = dfs(numbers.clone(), target);
+            // By checking result you make sure that compiler doesn't optimize it away,
+            // and also ensure that your optimizations don't break semantics
+            assert_eq!(res, None);
+        }
+        // Print time with two digit after ., to avoid excessive precision
+        eprintln!(
+            "Avg times over {} iterations: {:0.2?}",
+            num_iters,
+            t.elapsed() / num_iters
+        )
+    }
+
+    #[test]
+    fn test_dfs_succeeds() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 252;
+        assert!(matches!(dfs(numbers, target), Some(_)));
+    }
+
+    #[test]
+    fn test_dfs_fails_impossible() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 252013;
+        assert!(matches!(dfs(numbers, target), None));
+    }
+
+    #[test]
+    fn test_dfs_succeeds_with_zero_target() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 0;
+        assert!(matches!(dfs(numbers, target), Some(_)));
+    }
+
+    #[test]
+    fn test_dfs_succeeds_with_negative_target() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = -2;
+        assert!(matches!(dfs(numbers, target), Some(_)));
+    }
+
+    #[test]
+    fn test_dfs_succeeds_with_zero_num() {
+        let numbers = vec![3, 0, 7, 13, 20, 25];
+        let target = 430;
+        assert!(matches!(dfs(numbers, target), Some(_)));
+    }
+
+    #[test]
+    fn test_dfs_succeeds_with_duplicate_zeroes() {
+        let numbers = vec![0, 0, 7, 13, 20, 25];
+        let target = 40;
+        assert!(matches!(dfs(numbers, target), Some(_)));
     }
 }
