@@ -1,7 +1,7 @@
 use std::fmt;
 
-pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<String>> {
-    let hist: Vec<String> = vec![];
+pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<Expression>> {
+    let hist: Vec<Expression> = vec![];
     let mut search = vec![(numbers, hist)];
 
     while search.len() > 0 {
@@ -11,7 +11,7 @@ pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<String>> {
                     for op in ALL_OPS.iter() {
                         if let Some(result) = apply_op(*op, *n1, *n2) {
                             let mut new_history = history.clone();
-                            new_history.push(format!("{} {} {}", n1, op, n2));
+                            new_history.push(Expression(*n1, *op, *n2));
                             if result == target {
                                 return Some(new_history);
                             } else {
@@ -51,7 +51,7 @@ fn apply_op(op: Ops, n1: i32, n2: i32) -> Option<i32> {
 
 const ALL_OPS: [Ops; 4] = [Ops::Plus, Ops::Minus, Ops::Multiply, Ops::Divide];
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Ops {
     Plus,
     Minus,
@@ -67,6 +67,16 @@ impl fmt::Display for Ops {
             Ops::Multiply => write!(f, "*"),
             Ops::Divide => write!(f, "/"),
         }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct Expression(i32, Ops, i32);
+
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let Expression(n1, op, n2) = *self;
+        write!(f, "{} {} {}", n1, op, n2)
     }
 }
 
