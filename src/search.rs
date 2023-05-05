@@ -81,9 +81,40 @@ impl fmt::Display for Expression {
 }
 
 #[cfg(test)]
+fn verify_exprs(exprs: &Vec<Expression>, mut nums: Vec<i32>, target: i32) -> bool {
+    if exprs.len() == 0 {
+        return false;
+    }
+    let mut result;
+    for Expression(n1, op, n2) in exprs.iter() {
+        result = match op {
+            Ops::Plus => n1 + n2,
+            Ops::Minus => n1 - n2,
+            Ops::Multiply => n1 * n2,
+            Ops::Divide => n1 / n2,
+        };
+
+        // Remove first occurence of each number used, add the new number
+        if let Some(i1) = nums.iter().position(|n| n == n1) {
+            nums.remove(i1);
+        } else {
+            return false;
+        }
+        if let Some(i2) = nums.iter().position(|n| n == n2) {
+            nums.remove(i2);
+        } else {
+            return false;
+        }
+        nums.push(result);
+    }
+    nums.contains(&target)
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
+    #[ignore]
     #[test] // so that you can run this with `cargo test --release -- my_bench --nocapture`
     fn bench() {
         let numbers = vec![3, 5, 7, 13, 20, 25];
@@ -109,7 +140,11 @@ mod tests {
     fn test_dfs_succeeds() {
         let numbers = vec![3, 5, 7, 13, 20, 25];
         let target = 252;
-        assert!(matches!(dfs(numbers, target), Some(_)));
+        if let Some(exprs) = dfs(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs failed to find solution.")
+        }
     }
 
     #[test]
@@ -123,27 +158,43 @@ mod tests {
     fn test_dfs_succeeds_with_zero_target() {
         let numbers = vec![3, 5, 7, 13, 20, 25];
         let target = 0;
-        assert!(matches!(dfs(numbers, target), Some(_)));
+        if let Some(exprs) = dfs(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs failed to find solution.")
+        }
     }
 
     #[test]
     fn test_dfs_succeeds_with_negative_target() {
         let numbers = vec![3, 5, 7, 13, 20, 25];
         let target = -2;
-        assert!(matches!(dfs(numbers, target), Some(_)));
+        if let Some(exprs) = dfs(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs failed to find solution.")
+        }
     }
 
     #[test]
     fn test_dfs_succeeds_with_zero_num() {
         let numbers = vec![3, 0, 7, 13, 20, 25];
         let target = 430;
-        assert!(matches!(dfs(numbers, target), Some(_)));
+        if let Some(exprs) = dfs(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs failed to find solution.")
+        }
     }
 
     #[test]
     fn test_dfs_succeeds_with_duplicate_zeroes() {
         let numbers = vec![0, 0, 7, 13, 20, 25];
         let target = 40;
-        assert!(matches!(dfs(numbers, target), Some(_)));
+        if let Some(exprs) = dfs(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs failed to find solution.")
+        }
     }
 }
