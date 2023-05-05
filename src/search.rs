@@ -96,12 +96,12 @@ fn verify_exprs(exprs: &Vec<Expression>, mut nums: Vec<i32>, target: i32) -> boo
 
         // Remove first occurence of each number used, add the new number
         if let Some(i1) = nums.iter().position(|n| n == n1) {
-            nums.remove(i1);
+            nums.swap_remove(i1);
         } else {
             return false;
         }
         if let Some(i2) = nums.iter().position(|n| n == n2) {
-            nums.remove(i2);
+            nums.swap_remove(i2);
         } else {
             return false;
         }
