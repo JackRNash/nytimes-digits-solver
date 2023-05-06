@@ -18,8 +18,9 @@ pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<Expression>> {
                                 let mut new_nums = nums
                                     .iter()
                                     .enumerate()
-                                    .filter(|(i, _)| *i != i1 && *i != i2)
-                                    .map(|(_, n)| *n)
+                                    .filter_map(
+                                        |(i, n)| if i != i1 && i != i2 { Some(*n) } else { None },
+                                    )
                                     .collect::<Vec<i32>>();
                                 new_nums.push(result);
                                 search.push((new_nums, new_history));
@@ -113,8 +114,8 @@ fn verify_exprs(exprs: &Vec<Expression>, mut nums: Vec<i32>, target: i32) -> boo
 mod tests {
     use super::*;
 
-    #[ignore]
-    #[test] // so that you can run this with `cargo test --release -- my_bench --nocapture`
+    // #[ignore]
+    #[test] // so that you can run this with `cargo test --release -- bench --nocapture`
     fn bench() {
         let numbers = vec![3, 5, 7, 13, 20, 25];
         let target = 252013;
