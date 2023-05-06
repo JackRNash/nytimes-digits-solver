@@ -34,6 +34,47 @@ pub fn dfs(numbers: Vec<i32>, target: i32) -> Option<Vec<Expression>> {
     None
 }
 
+// I personally find the recursive version easier to reason about and performance is about the same
+pub fn dfs_recursive(numbers: Vec<i32>, target: i32) -> Option<Vec<Expression>> {
+    let history = vec![];
+    dfs_recursive_inner(numbers, history, target)
+}
+
+#[inline(always)]
+pub fn dfs_recursive_inner(
+    numbers: Vec<i32>,
+    history: Vec<Expression>,
+    target: i32,
+) -> Option<Vec<Expression>> {
+    for (i1, n1) in numbers.iter().enumerate() {
+        for (i2, n2) in numbers.iter().enumerate().filter(|(i, _)| *i != i1) {
+            for op in ALL_OPS.iter() {
+                if let Some(result) = apply_op(*op, *n1, *n2) {
+                    let mut new_history = history.clone();
+                    new_history.push(Expression(*n1, *op, *n2));
+                    if result == target {
+                        return Some(new_history);
+                    } else {
+                        let mut new_numbers = numbers
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(i, n)| if i != i1 && i != i2 { Some(*n) } else { None })
+                            .collect::<Vec<i32>>();
+                        new_numbers.push(result);
+                        if let Some(solution) =
+                            dfs_recursive_inner(new_numbers, new_history, target)
+                        {
+                            return Some(solution);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+#[inline(always)]
 fn apply_op(op: Ops, n1: i32, n2: i32) -> Option<i32> {
     match op {
         Ops::Plus => Some(n1 + n2),
@@ -114,7 +155,7 @@ fn verify_exprs(exprs: &Vec<Expression>, mut nums: Vec<i32>, target: i32) -> boo
 mod tests {
     use super::*;
 
-    // #[ignore]
+    #[ignore]
     #[test] // so that you can run this with `cargo test --release -- bench --nocapture`
     fn bench() {
         let numbers = vec![3, 5, 7, 13, 20, 25];
@@ -195,6 +236,68 @@ mod tests {
             assert!(verify_exprs(&exprs, numbers, target));
         } else {
             panic!("dfs failed to find solution.")
+        }
+    }
+
+    #[test]
+    fn test_dfs_recursive_succeeds() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 252;
+        if let Some(exprs) = dfs_recursive(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs_recursive failed to find solution.")
+        }
+    }
+
+    #[test]
+    fn test_dfs_recursive_fails_impossible() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 252013;
+        assert!(matches!(dfs_recursive(numbers, target), None));
+    }
+
+    #[test]
+    fn test_dfs_recursive_succeeds_with_zero_target() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = 0;
+        if let Some(exprs) = dfs_recursive(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs_recursive failed to find solution.")
+        }
+    }
+
+    #[test]
+    fn test_dfs_recursive_succeeds_with_negative_target() {
+        let numbers = vec![3, 5, 7, 13, 20, 25];
+        let target = -2;
+        if let Some(exprs) = dfs_recursive(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs_recursive failed to find solution.")
+        }
+    }
+
+    #[test]
+    fn test_dfs_recursive_succeeds_with_zero_num() {
+        let numbers = vec![3, 0, 7, 13, 20, 25];
+        let target = 430;
+        if let Some(exprs) = dfs_recursive(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs_recursive failed to find solution.")
+        }
+    }
+
+    #[test]
+    fn test_dfs_recursive_succeeds_with_duplicate_zeroes() {
+        let numbers = vec![0, 0, 7, 13, 20, 25];
+        let target = 40;
+        if let Some(exprs) = dfs_recursive(numbers.clone(), target) {
+            assert!(verify_exprs(&exprs, numbers, target));
+        } else {
+            panic!("dfs_recursive failed to find solution.")
         }
     }
 }
